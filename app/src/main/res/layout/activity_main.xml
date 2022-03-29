@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#6F2196F3"
+    tools:context=".MainActivity">
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/cardView"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:backgroundTint="@color/black"
+        android:layout_marginTop="6dp" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="400dp"
+        android:layout_height="60dp"
+        app:cardCornerRadius="5dp"
+        app:cardElevation="200dp"
+        android:elevation="2dp"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="400dp"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme">
+
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/drop_down"
+                android:layout_width="130dp"
+                android:layout_height="53dp"
+                android:hint="@string/select_sort"
+                android:layout_marginStart="260dp"
+                android:layout_marginBottom="6dp"
+                android:elevation="20dp"
+                app:boxStrokeColor="@color/white"
+                android:textColor="@color/white"
+                app:prefixTextColor="@color/white"
+                style="@style/Widget.App.ExposedDropdownMenu"
+                >
+
+                <AutoCompleteTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:padding="5dp"
+                    android:id="@+id/sorts"
+                    android:inputType="none"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/lottie_layer_name"
+                android:layout_width="500dp"
+                android:layout_height="500dp"
+                android:elevation="5dp"
+                android:translationX="-450dp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/toolbar_background">
+
+            </com.airbnb.lottie.LottieAnimationView>
+        </androidx.appcompat.widget.Toolbar>
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:theme="@style/AppSearchView"/>
+
+
+    </androidx.cardview.widget.CardView>
+
+
+</RelativeLayout>
