@@ -1,12 +1,16 @@
-# FetchRewardsApp
+# Fetch Rewards Coding Exercise
 
-Display this list of items to the user based on the following requirements:
+## User Stories
 
--   Display all the items grouped by "listId"
--   Sort the results first by "listId" then by "name" when displaying.
--   Filter out any items where "name" is blank or null.
+The following **required** functionality is completed:
 
-- [x] can use SearchView to filter through the items by name
-- [x] can sort the list by Name, listId, and ID
-- [x] can delete items from the list 
+* [x] Display all the items grouped by "listId
+* [x] User can sort the results first by "listId" then by "name" when displaying.
+* [x] Filter out any items where "name" is blank or null.
+
+The following **additional** features are implemented:
+
+* [x] User can sort the list by ID
+* [x] User can successfully delete items from the list 
+* [x] User's list of items persisted upon modification and and retrieved properly on app restart
 
