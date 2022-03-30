@@ -18,12 +18,9 @@ public class Item {
 
     public Item(JSONObject jsonObject) throws JSONException{
 
-
             id = jsonObject.getInt("id");
             listId = jsonObject.getInt("listId");
             name = jsonObject.getString("name");
-
-
     }
 
     public static List<Item> fromJSONArray(JSONArray jsonArray) throws JSONException {

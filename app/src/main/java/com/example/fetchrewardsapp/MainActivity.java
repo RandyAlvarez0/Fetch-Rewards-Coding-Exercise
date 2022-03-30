@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,11 +23,18 @@ import com.codepath.asynchttpclient.AsyncHttpClient;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import org.apache.commons.io.*;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,12 +46,15 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String URL = "https://fetch-hiring.s3.amazonaws.com/hiring.json";
     public static final String TAG  = "MainActivity";
+    ItemTouchHelper.SimpleCallback simpleCallback;
     LottieAnimationView lottieAnimationView;
     TextInputLayout textInputLayout;
     AutoCompleteTextView autoCompleteTextView;
     RecyclerView recyclerView;
     ItemAdapter adapter;
+    Item deleted = null;
     List<Item> list;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +81,15 @@ public class MainActivity extends AppCompatActivity {
         searchView.setQueryHint("Search");
         searchView.clearFocus();
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        getJSONData(client);
+        search(searchView);
+        swipeDelete();
+        sortItems();
+
+    }
+
+    private void search(SearchView view) {
+        view.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 return false;
@@ -82,60 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-
-
-        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String sort = (String) adapterView.getItemAtPosition(i);
-                Toast.makeText(MainActivity.this, (String) adapterView.getItemAtPosition(i), Toast.LENGTH_SHORT).show();
-
-                if(sort.equals("by List ID")){
-                    Collections.sort(list, Item.ItemListIdSort);
-                    adapter.notifyDataSetChanged();
-                }
-                if(sort.equals("by Name")){
-                    Collections.sort(list, Item.ItemNameSort);
-                    adapter.notifyDataSetChanged();
-                }
-                if(sort.equals("by ID")){
-                    Collections.sort(list, Item.ItemIdSort);
-                    adapter.notifyDataSetChanged();
-                }
-
-            }
-        });
-
-        client.get(URL, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Headers headers, JSON json) {
-                Log.d(TAG, "onSuccess");
-                JSONArray jsonArray = json.jsonArray;
-
-                try{
-                    Log.i(TAG, "Array: " + jsonArray.toString());
-                    list.addAll(Item.fromJSONArray(jsonArray));
-                    adapter.notifyDataSetChanged();
-
-                }catch(JSONException e){
-                    Log.e(TAG, "hit json exception");
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                Log.d(TAG, "onFailure")                                                                                              ;
-
-            }
-        });
     }
 
-    Item deleted = null;
-    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private void swipeDelete() {
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
             return false;
@@ -159,10 +128,66 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+    private void sortItems() {
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String sort = (String) adapterView.getItemAtPosition(i);
+                Toast.makeText(MainActivity.this, (String) adapterView.getItemAtPosition(i), Toast.LENGTH_SHORT).show();
+
+                if(sort.equals("by List ID")){
+                    Collections.sort(list, Item.ItemListIdSort);
+                    adapter.notifyDataSetChanged();
+                }
+                if(sort.equals("by Name")){
+                    Collections.sort(list, Item.ItemNameSort);
+                    adapter.notifyDataSetChanged();
+                }
+                if(sort.equals("by ID")){
+                    Collections.sort(list, Item.ItemIdSort);
+                    adapter.notifyDataSetChanged();
+                }
+
+            }
+        });
+    }
+
+
+    private void getJSONData(AsyncHttpClient client){
+        client.get(URL, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.d(TAG, "onSuccess");
+                JSONArray jsonArray = json.jsonArray;
+
+                try{
+                    Log.i(TAG, "Array: " + jsonArray.toString());
+                    list.addAll(Item.fromJSONArray(jsonArray));
+                    adapter.notifyDataSetChanged();
+
+                }catch(JSONException e){
+                    Log.e(TAG, "hit json exception");
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.d(TAG, "onFailure")                                                                                              ;
+
+            }
+        });
+
+    }
+
     private void filerList(String newText) {
         List<Item> filtered = new ArrayList<>();
         for(Item item : list){
-            if(item.getName().toLowerCase().contains(newText.toLowerCase())){
+            if(String.valueOf(item.getListId()).contains(newText)){
                 filtered.add(item);
             }
 
@@ -170,6 +195,5 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
 
 }
